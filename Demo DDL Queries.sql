@@ -51,7 +51,7 @@ CREATE TABLE fact_trip (
     time_key          INTEGER NOT NULL,
     start_station_key INTEGER NOT NULL,
     end_station_key   INTEGER NOT NULL,
-    weather_key       INTEGER NOT NULL,
+    weather_key       INTEGER,
     rider_key         INTEGER NOT NULL,
     started_at        TIMESTAMP NOT NULL,
     ended_at          TIMESTAMP NOT NULL,
