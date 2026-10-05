@@ -46,7 +46,7 @@ CREATE TABLE dim_rider (
 );
 
 CREATE TABLE fact_trip (
-    ride_id           INTEGER PRIMARY KEY,
+    ride_id           VARCHAR(50) PRIMARY KEY,
     date_key          INTEGER NOT NULL,
     time_key          INTEGER NOT NULL,
     start_station_key INTEGER NOT NULL,
