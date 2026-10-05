@@ -14,6 +14,3 @@ Source: Open data portal (https://s3.amazonaws.com/tripdata/index.html)
 
 2. Open-Meteo Historical Weather (API)
 Source: API (https://archive-api.open-meteo.com)
-
-3. Synthetic User Demographics (CSV)
-Source: Generated using Python Faker / Mockaroo.
