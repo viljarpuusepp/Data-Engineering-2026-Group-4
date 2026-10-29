@@ -1,0 +1,63 @@
+version: 2
+
+models:
+  - name: dim_station
+    description: A unique CitiBike station, used as both trip origin and destination.
+    columns:
+      - name: station_key
+        description: Deterministic hash of the CitiBike station identifier.
+        tests: [not_null, unique]
+      - name: station_id
+        tests: [not_null, unique]
+      - name: station_name
+        tests: [not_null]
+  - name: dim_weather
+    description: Hourly Jersey City weather observations.
+    columns:
+      - name: weather_key
+        tests: [not_null, unique]
+      - name: observation_hour
+        tests: [not_null, unique]
+  - name: dim_rider
+    description: Distinct combination of rideable type and membership segment.
+    columns:
+      - name: rider_key
+        tests: [not_null, unique]
+      - name: rideable_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: [classic_bike, electric_bike, docked_bike]
+      - name: member_casual
+        tests:
+          - not_null
+          - accepted_values:
+              values: [member, casual]
+  - name: fact_trip
+    description: One cleaned CitiBike trip, enriched with station, rider, and available hourly weather keys.
+    columns:
+      - name: ride_id
+        tests: [not_null, unique]
+      - name: trip_date
+        tests: [not_null]
+      - name: start_station_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_station')
+              field: station_key
+      - name: end_station_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_station')
+              field: station_key
+      - name: rider_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_rider')
+              field: rider_key
+      - name: trip_duration_sec
+        tests: [not_null]
+

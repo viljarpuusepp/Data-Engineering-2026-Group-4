@@ -1,0 +1,4 @@
+clickhouse-connect==0.8.15
+dbt-clickhouse==1.9.2
+requests==2.32.3
+

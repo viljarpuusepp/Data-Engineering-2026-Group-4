@@ -1,0 +1,12 @@
+.env
+data/raw/
+data/processed/
+data/airflow-logs/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+target/
+dbt_packages/
+dbt/logs/
+dbt/.user.yml
+

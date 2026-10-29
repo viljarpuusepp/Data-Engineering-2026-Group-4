@@ -1,0 +1,17 @@
+name: citibike_analytics
+version: "1.0.0"
+config-version: 2
+profile: citibike_analytics
+
+model-paths: ["models"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  citibike_analytics:
+    silver:
+      +materialized: view
+    gold:
+      +materialized: table
+

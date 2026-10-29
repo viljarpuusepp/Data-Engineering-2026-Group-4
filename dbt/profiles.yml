@@ -1,0 +1,14 @@
+citibike_analytics:
+  target: dev
+  outputs:
+    dev:
+      type: clickhouse
+      host: clickhouse
+      port: 8123
+      user: pipeline
+      password: ""
+      secure: false
+      verify: false
+      schema: analytics
+      threads: 4
+

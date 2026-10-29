@@ -1,0 +1,22 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: Canonical, append-only source records loaded by Airflow.
+    schema: bronze
+    tables:
+      - name: citibike_trip_raw
+        description: Raw CitiBike trip records, replacement-versioned by ingestion timestamp.
+        columns:
+          - name: ride_id
+            tests: [not_null]
+          - name: ingested_at
+            tests: [not_null]
+      - name: open_meteo_hourly_raw
+        description: Raw hourly Open-Meteo observations, replacement-versioned by ingestion timestamp.
+        columns:
+          - name: observation_hour
+            tests: [not_null]
+          - name: ingested_at
+            tests: [not_null]
+
