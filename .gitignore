@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Airflow
+logs/
+airflow.cfg/
+airflow.db/
+
+# Data
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Environment variables
+.env
+*.env
+!.env.example
+
+# Mac
+.DS_Store

@@ -1,0 +1,4 @@
+pandas
+requests
+clickhouse-connect
+pyarrow
