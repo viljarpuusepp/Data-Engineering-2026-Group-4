@@ -130,12 +130,12 @@ baselines AS (
     FROM hourly_rides
 )
 SELECT
-    round(fair_rides_per_hour, 1) AS fair_rides_per_hour,
-    round(100 * (avgIf(rides, rain > 0) / fair_rides_per_hour - 1), 1) AS rain_pct_change,
-    round(100 * (avgIf(rides, snowfall > 0) / fair_rides_per_hour - 1), 1) AS snow_pct_change,
-    round(100 * (avgIf(rides, wind_speed_10m >= 20) / fair_rides_per_hour - 1), 1) AS wind_pct_change,
-    round(100 * (avgIf(rides, temperature_2m < 10) / fair_rides_per_hour - 1), 1) AS cold_pct_change,
-    round(100 * (avgIf(rides, temperature_2m >= 25) / fair_rides_per_hour - 1), 1) AS heat_pct_change
+    round(any(baselines.fair_rides_per_hour), 1) AS fair_rides_per_hour,
+    round(100 * (avgIf(rides, rain > 0) / any(baselines.fair_rides_per_hour) - 1), 1) AS rain_pct_change,
+    round(100 * (avgIf(rides, snowfall > 0) / any(baselines.fair_rides_per_hour) - 1), 1) AS snow_pct_change,
+    round(100 * (avgIf(rides, wind_speed_10m >= 20) / any(baselines.fair_rides_per_hour) - 1), 1) AS wind_pct_change,
+    round(100 * (avgIf(rides, temperature_2m < 10) / any(baselines.fair_rides_per_hour) - 1), 1) AS cold_pct_change,
+    round(100 * (avgIf(rides, temperature_2m >= 25) / any(baselines.fair_rides_per_hour) - 1), 1) AS heat_pct_change
 FROM hourly_rides
 CROSS JOIN baselines;
 ```

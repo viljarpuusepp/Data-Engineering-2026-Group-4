@@ -5,6 +5,12 @@ with ranked as (
         *,
         row_number() over (partition by ride_id order by ingested_at desc) as latest_row
     from {{ source('bronze', 'citibike_trip_raw') }}
+    where start_station_id is not null
+      and end_station_id is not null
+      and rideable_type is not null
+      and member_casual is not null
+      and started_at is not null
+      and ended_at is not null
 ),
 cleaned as (
     select
@@ -25,14 +31,7 @@ cleaned as (
         dateDiff('second', started_at, ended_at) as trip_duration_sec
     from ranked
     where latest_row = 1
-      and started_at is not null
-      and ended_at is not null
       and ended_at >= started_at
       and dateDiff('second', started_at, ended_at) <= 86400
-      and start_station_id is not null
-      and end_station_id is not null
-      and rideable_type is not null
-      and member_casual is not null
 )
 select * from cleaned
-

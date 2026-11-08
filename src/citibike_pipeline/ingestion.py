@@ -74,7 +74,7 @@ def weather_request_url(start_date: date, end_date: date) -> str:
         "longitude": JERSEY_CITY_LONGITUDE,
         "start_date": start_date.isoformat(),
         "end_date": end_date.isoformat(),
-        "timezone": "UTC",
+        "timezone": "America/New_York",
         "hourly": (
             "temperature_2m,apparent_temperature,precipitation,rain,snowfall,"
             "snow_depth,wind_speed_10m,weather_code"

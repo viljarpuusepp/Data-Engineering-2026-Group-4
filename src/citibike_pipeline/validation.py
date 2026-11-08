@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import csv
 import json
-from datetime import date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from citibike_pipeline.settings import REQUIRED_TRIP_COLUMNS
 
@@ -46,13 +47,19 @@ def validate_trip_csv(path: str | Path) -> dict[str, str | int]:
         "end_date": max_date.isoformat(),
     }
 
+def expected_local_hours(start_date: date, end_date: date) -> int:
+    """Hours from start_date 00:00 to the end of end_date, in New York local time."""
+    zone = ZoneInfo("America/New_York")
+    start = datetime(start_date.year, start_date.month, start_date.day, tzinfo=zone)
+    end = datetime(end_date.year, end_date.month, end_date.day, tzinfo=zone) + timedelta(days=1)
+    return int((end.astimezone(UTC) - start.astimezone(UTC)).total_seconds() // 3600)
 
 def validate_weather_payload(path: str | Path, start_date: date, end_date: date) -> dict[str, int]:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
     hourly = payload.get("hourly")
     if not isinstance(hourly, dict) or not isinstance(hourly.get("time"), list):
         raise ValueError("Open-Meteo response has no hourly time series")
-    expected_hours = int((end_date - start_date).days + 1) * 24
+    expected_hours = expected_local_hours(start_date, end_date)
     if len(hourly["time"]) != expected_hours:
         raise ValueError("Open-Meteo response does not cover every requested hour")
     for field, values in hourly.items():
