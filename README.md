@@ -17,6 +17,10 @@ The Airflow UI is available at `http://localhost:8081` by default. The complete 
 rules, and verification commands are in [PROJECT.md](PROJECT.md), [AGENTS.md](AGENTS.md), and
 [docs/Home.md](docs/Home.md).
 
+## dbt model lineage
+
+![dbt lineage graph](docs/images/dbt-lineage.jpeg)
+
 ## Original Project 1 artefacts
 
 The remaining SQL files document the original P1 star-schema design. They are retained as course
