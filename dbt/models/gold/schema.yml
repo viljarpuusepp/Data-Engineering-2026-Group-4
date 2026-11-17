@@ -2,62 +2,132 @@ version: 2
 
 models:
   - name: dim_station
-    description: A unique CitiBike station, used as both trip origin and destination.
+    description: >
+      Station dimension. One row per CitiBike station ID, used as both trip origin
+      and destination (role-playing dimension). Built from start and end stations in
+      stg_trips. Type 1: the name is the most recently used one and the coordinates are
+      averaged over all trips; history is not kept.
     columns:
       - name: station_key
-        description: Deterministic hash of the CitiBike station identifier.
+        description: Surrogate key, cityHash64(station_id). Deterministic, so the fact table can compute it without a lookup.
         tests: [not_null, unique]
       - name: station_id
+        description: CitiBike's natural station identifier (e.g. JC009).
         tests: [not_null, unique]
       - name: station_name
+        description: Most recent station name seen in the trip data ('Unknown' if the source name was empty).
         tests: [not_null]
+      - name: latitude
+        description: Average latitude reported for the station across all trips.
+      - name: longitude
+        description: Average longitude reported for the station across all trips.
+
   - name: dim_weather
-    description: Hourly Jersey City weather observations.
+    description: >
+      Weather dimension. One row per hour of Open-Meteo observations for Jersey City,
+      in America/New_York local time to match CitiBike timestamps.
     columns:
       - name: weather_key
+        description: Surrogate key in YYYYMMDDHH form, derived from observation_hour.
         tests: [not_null, unique]
       - name: observation_hour
+        description: Start of the observed hour (local wall-clock time).
         tests: [not_null, unique]
+      - name: temperature_2m
+        description: Air temperature 2 m above ground (°C).
+      - name: apparent_temperature
+        description: Perceived (feels-like) temperature (°C).
+      - name: precipitation
+        description: Total precipitation in the hour, rain plus snow (mm).
+      - name: rain
+        description: Liquid rain in the hour (mm).
+      - name: snowfall
+        description: Snowfall in the hour (cm).
+      - name: snow_depth
+        description: Snow depth on the ground (m).
+      - name: wind_speed_10m
+        description: Wind speed 10 m above ground (km/h).
+      - name: weather_code
+        description: WMO weather interpretation code.
+      - name: is_wet
+        description: True when the hour had any precipitation, rain or snowfall. Used for the wet/dry comparisons.
+
   - name: dim_rider
-    description: Distinct combination of rideable type and membership segment.
+    description: >
+      Rider dimension (junk dimension). One row per distinct combination of bike type
+      and membership segment. CitiBike data has no personal rider attributes.
     columns:
       - name: rider_key
+        description: Surrogate key, cityHash64(rideable_type || '|' || member_casual).
         tests: [not_null, unique]
       - name: rideable_type
+        description: Bike type used for the ride.
         tests:
           - not_null
           - accepted_values:
               values: [classic_bike, electric_bike, docked_bike]
       - name: member_casual
+        description: Annual member or casual (pay-per-ride) rider.
         tests:
           - not_null
           - accepted_values:
               values: [member, casual]
+
   - name: fact_trip
-    description: One cleaned CitiBike trip, enriched with station, rider, and available hourly weather keys.
+    description: >
+      Trip fact table. Grain: one row per completed CitiBike ride (ride_id).
+      Contains only rides from stg_trips with both stations known and a duration
+      between 0 and 24 hours. Date and start hour are kept as degenerate attributes
+      instead of separate date and time dimensions. Partitioned by month and ordered
+      by (trip_date, ride_id).
     columns:
       - name: ride_id
+        description: CitiBike's unique ride identifier. Primary key of the fact.
         tests: [not_null, unique]
       - name: trip_date
+        description: Local calendar date the ride started.
+        tests: [not_null]
+      - name: trip_start_hour
+        description: Local hour of day the ride started (0–23).
         tests: [not_null]
       - name: start_station_key
+        description: Foreign key to dim_station for the origin station.
         tests:
           - not_null
           - relationships:
               to: ref('dim_station')
               field: station_key
       - name: end_station_key
+        description: Foreign key to dim_station for the destination station.
         tests:
           - not_null
           - relationships:
               to: ref('dim_station')
               field: station_key
       - name: rider_key
+        description: Foreign key to dim_rider.
         tests:
           - not_null
           - relationships:
               to: ref('dim_rider')
               field: rider_key
+      - name: weather_key
+        description: >
+          Foreign key to dim_weather for the hour the ride started. ClickHouse fills
+          unmatched left-join rows with 0 instead of NULL, so this test flags any ride
+          without a weather match (warning only, so it does not stop the pipeline).
+        tests:
+          - relationships:
+              to: ref('dim_weather')
+              field: weather_key
+              config:
+                severity: warn
+      - name: started_at
+        description: Ride start timestamp (local time).
+      - name: ended_at
+        description: Ride end timestamp (local time).
       - name: trip_duration_sec
+        description: Ride duration in seconds (ended_at − started_at). Measure.
         tests: [not_null]
-
+      - name: source_month
+        description: CitiBike monthly archive (YYYY-MM) the ride was loaded from. Lineage back to Bronze.
