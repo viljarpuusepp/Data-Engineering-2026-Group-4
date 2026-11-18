@@ -1,0 +1,75 @@
+version: 2
+
+models:
+  - name: stg_trips
+    description: >
+      Silver trips. Takes the latest Bronze version of each ride_id (deduplication
+      for re-runs), drops rides missing a station, bike type, member type or
+      timestamp, drops rides with a negative duration or longer than 24 hours, and
+      computes trip_duration_sec. View, so it always reflects current Bronze.
+    columns:
+      - name: ride_id
+        description: CitiBike's unique ride identifier.
+        tests: [not_null, unique]
+      - name: rideable_type
+        description: Bike type (classic_bike, electric_bike, docked_bike).
+        tests: [not_null]
+      - name: started_at
+        description: Ride start timestamp (local time).
+        tests: [not_null]
+      - name: ended_at
+        description: Ride end timestamp (local time).
+        tests: [not_null]
+      - name: start_station_id
+        description: Origin station natural ID.
+        tests: [not_null]
+      - name: start_station_name
+        description: Origin station name, 'Unknown' if empty in the source.
+      - name: end_station_id
+        description: Destination station natural ID.
+        tests: [not_null]
+      - name: end_station_name
+        description: Destination station name, 'Unknown' if empty in the source.
+      - name: start_lat
+        description: Origin latitude.
+      - name: start_lng
+        description: Origin longitude.
+      - name: end_lat
+        description: Destination latitude.
+      - name: end_lng
+        description: Destination longitude.
+      - name: member_casual
+        description: member or casual.
+        tests: [not_null]
+      - name: source_month
+        description: Monthly archive (YYYY-MM) the record came from.
+      - name: trip_duration_sec
+        description: Ride duration in seconds, between 0 and 86 400.
+        tests: [not_null]
+
+  - name: stg_weather
+    description: >
+      Silver weather. Takes the latest Bronze version of each observation_hour, so
+      re-running a month does not create duplicate hours.
+    columns:
+      - name: observation_hour
+        description: Start of the observed hour (America/New_York local time).
+        tests: [not_null, unique]
+      - name: temperature_2m
+        description: Air temperature 2 m above ground (°C).
+      - name: apparent_temperature
+        description: Feels-like temperature (°C).
+      - name: precipitation
+        description: Total precipitation (mm).
+      - name: rain
+        description: Rain (mm).
+      - name: snowfall
+        description: Snowfall (cm).
+      - name: snow_depth
+        description: Snow depth (m).
+      - name: wind_speed_10m
+        description: Wind speed 10 m above ground (km/h).
+      - name: weather_code
+        description: WMO weather interpretation code.
+      - name: source_month
+        description: Pipeline month (YYYY-MM) the observation was fetched for.
